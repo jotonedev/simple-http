@@ -4,9 +4,10 @@ FROM golang:latest as builder
 WORKDIR /build
 ENV GO111MODULE=on
 ENV GIN_MODE=release
+ENV CGO_ENABLED=0
 
 COPY src/main.go .
-RUN CGO_ENABLED=0 go build -v -a -ldflags '-s -w -extldflags "-static"' -o server src/main.go
+RUN go build -v -a -ldflags '-s -w -extldflags "-static"' -o server main.go
 
 
 ## Run
@@ -26,6 +27,6 @@ RUN chmod 005 /srv/server
 
 USER nonroot:nonroot
 EXPOSE 8080
-HEALTHCHECK --interval=5s --timeout=3s --start-period=5s --retries=3 CMD /bin/netstat -atl | /bin/grep ':8080' || exit 1
+HEALTHCHECK --interval=60s --timeout=3s --start-period=5s --retries=3 CMD /bin/netstat -atl | /bin/grep ':8080' || exit 1
 
 CMD ["/srv/server"]
